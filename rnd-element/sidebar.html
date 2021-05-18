@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://miro.com/app/static/styles.1.0.css"
+    />
+    <script src="https://miro.com/app/static/sdk.1.1.js"></script>
+    <style type="text/css">
+      #title {
+        font-size: 19px;
+        font-weight: bold;
+        color: rgba(0, 0, 0, 0.8);
+        padding: 22px 60px 0 20px;
+        overflow: auto;
+      }
+
+      #content {
+        overflow-y: auto;
+        height: calc(100% - 55px);
+        padding: 10px 25px 20px 20px;
+      }
+
+      .button-full-width {
+        width: 100%;
+      }
+
+      #dice-btn {
+        margin-top: 10px;
+      }
+    </style>
+    <script type="text/javascript">
+      // Монетка
+      const flipCoin = () => (Math.random() < 0.5 ? "Орёл" : "Решка");
+
+      // Кости
+      const flipDice = () => Math.round(Math.random() * 5 + 1);
+
+      // Ожидаем готовности Miro SDK
+      miro.onReady(async () => {
+        const coinBtn = document.querySelector("#coin-btn");
+
+        coinBtn.addEventListener("click", async () => {
+          // Получаем выделенные виджеты
+          const selectedWidgets = await miro.board.selection.get();
+
+          // Оставляем только стикеры среди выделенных виджетов
+          const stickers = selectedWidgets.filter(
+            (widget) => widget.type === "STICKER"
+          );
+
+          if (stickers.length !== 1) {
+            miro.showNotification("Выделите один стикер");
+            return;
+          }
+
+          const result = flipCoin();
+
+          // Обновляем стикер
+          miro.board.widgets.update({
+            ...stickers[0],
+            text: result,
+          });
+
+          miro.showNotification("Монетка подброшена с результатом " + result);
+        });
+
+        // Получаем элемент кнопки "Кости"
+        const diceBtn = document.querySelector("#dice-btn");
+
+        diceBtn.addEventListener("click", async () => {
+          // Получаем выделенные виджеты
+          const selectedWidgets = await miro.board.selection.get();
+
+          // Оставляем только стикеры среди выделенных виджетов
+          const stickers = selectedWidgets.filter(
+            (widget) => widget.type === "STICKER"
+          );
+
+          if (!stickers.length) {
+            miro.showNotification("Выделите стикеры");
+            return;
+          }
+
+          // Обновляем стикеры
+          stickers.forEach((sticker) => {
+            miro.board.widgets.update({
+              ...sticker,
+              text: "" + flipDice(),
+            });
+          });
+
+          miro.showNotification("Кубик подброшен");
+        });
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="title">Случайное событие</div>
+    <div id="content">
+      <div>
+        <button
+          id="coin-btn"
+          class="miro-btn miro-btn--primary miro-btn--medium button-full-width"
+        >
+          Монетка
+        </button>
+      </div>
+      <div>
+        <button
+          id="dice-btn"
+          class="miro-btn miro-btn--primary miro-btn--medium button-full-width"
+        >
+          Кости
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
