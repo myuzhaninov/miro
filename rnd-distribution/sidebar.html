@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://miro.com/app/static/styles.1.0.css"
+    />
+    <script src="https://miro.com/app/static/sdk.1.1.js"></script>
+    <style type="text/css">
+      #title {
+        font-size: 19px;
+        font-weight: bold;
+        color: rgba(0, 0, 0, 0.8);
+        padding: 22px 60px 0 20px;
+        overflow: auto;
+      }
+
+      #content {
+        overflow-y: auto;
+        height: calc(100% - 55px);
+        padding: 10px 25px 20px 20px;
+      }
+
+      #text-positions {
+        margin: 0px;
+        height: calc(100% - 70px);
+        width: 100%;
+        margin-bottom: 10px;
+        resize: none;
+      }
+
+      #randomize-btn {
+        width: 100%;
+      }
+    </style>
+    <script type="text/javascript">
+      // Случайная сортировка массива
+      const shuffle = (array) => array.sort(() => Math.random() - 0.5);
+
+      // Ожидаем готовности Miro SDK
+      miro.onReady(async () => {
+        const randomizeBtn = document.querySelector("#randomize-btn");
+
+        randomizeBtn.addEventListener("click", async () => {
+
+          const textPositions = document.querySelector("#text-positions").value;
+
+          const positions = textPositions.split("\n");
+
+          positions.filter((w) => w.length);
+
+          // Получаем выделенные виджеты
+          const selectedWidgets = await miro.board.selection.get();
+
+          // Оставляем только стикеры среди выделенных виджетов
+          const stickers = selectedWidgets.filter(
+            (widget) => widget.type === "STICKER"
+          );
+
+          if (!stickers.length) {
+            miro.showNotification("Выделите стикеры");
+            return;
+          }
+
+          if (stickers.length !== positions.length) {
+            miro.showNotification(
+              "Количество выделенных стикеров не совпадает с количеством элементов"
+            );
+            return;
+          }
+
+          // Перемешиваем
+          const shuffledPositions = shuffle(positions);
+
+          // Обновляем стикеры в соответствии с перемешиванием
+          stickers.forEach((sticker, i) => {
+            miro.board.widgets.update({
+              ...sticker,
+              text: shuffledPositions[i],
+            });
+          });
+
+          miro.showNotification("Успешно распределено");
+        });
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="title">Случайное распределение</div>
+    <div id="content">
+      <textarea
+        id="text-positions"
+        class="miro-input miro-input--primary"
+      ></textarea>
+      <button
+        id="randomize-btn"
+        class="miro-btn miro-btn--primary miro-btn--medium"
+      >
+        Распределить
+      </button>
+    </div>
+  </body>
+</html>
